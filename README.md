@@ -4,15 +4,21 @@ Repositorio para el **TP1** de la materia **Sistemas Operativos** en el **ITBA**
 
 ## Tabla de Contenidos
 
-- [SO TP1](#so-tp1)
-  - [Tabla de Contenidos](#tabla-de-contenidos)
-  - [Requisitos](#requisitos)
-  - [Instalacion](#instalacion)
-    - [Docker](#docker)
-      - [Descargar imagen](#descargar-imagen)
-      - [Ejecutar el contenedor](#ejecutar-el-contenedor)
-      - [Correr el contenedor](#correr-el-contenedor)
-      - [Aliases](#aliases)
+  - [SO TP1](#so-tp1)
+    - [Autores](#autores)
+    - [Tabla de Contenidos](#tabla-de-contenidos)
+    - [Instalacion](#instalacion)
+      - [Docker](#docker)
+        - [Descargar imagen](#descargar-imagen)
+        - [Ejecutar el contenedor](#ejecutar-el-contenedor)
+        - [Correr el contenedor](#correr-el-contenedor)
+        - [Aliases](#aliases)
+
+## Autores
+
+- Ben Deyheralde (Legajo: 63559)
+- Matias Mutz (Legajo: 63590)
+- Lucas Rouco (Legajo: 63366)
 
 ## Requisitos
 
