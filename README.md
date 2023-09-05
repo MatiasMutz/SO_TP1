@@ -7,6 +7,7 @@ Repositorio para el **TP1** de la materia **Sistemas Operativos** en el **ITBA**
   - [SO TP1](#so-tp1)
     - [Autores](#autores)
     - [Tabla de Contenidos](#tabla-de-contenidos)
+    - [Requisitos](#requisitos)
     - [Instalacion](#instalacion)
       - [Docker](#docker)
         - [Descargar imagen](#descargar-imagen)
