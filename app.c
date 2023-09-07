@@ -42,19 +42,19 @@ int main(int argc, char *argv[]) {
             close(fdsRead[i][STDOUT_FILENO]);
         } else {
             // HIJO
-            printf("\nHijo %d\n", i);
             close(STDIN_FILENO); // Cerramos STDIN en padre
             dup(fdsWrite[i][STDIN_FILENO]); // Dupeamos read end of pipe -> Lo manda a STDIN
             close(fdsWrite[i][STDIN_FILENO]); // Cerrramos ambos extremos del pipe
             close(fdsWrite[i][STDOUT_FILENO]);
 
+            /*
             close(STDOUT_FILENO); // Cerramos STDOUT en padre
             dup(fdsRead[i][STDOUT_FILENO]); // Dupeamos write end of pipe -> Lo manda a STDOUT
             close(fdsRead[i][STDIN_FILENO]); // Cerrramos ambos extremos del pipe
             close(fdsRead[i][STDOUT_FILENO]);
-
+            */
             execve("slave", NULL, NULL);
         }
     }
-    //while (waitpid(-1, &status, 0) > 0);
+    while (waitpid(-1, &status, 0) > 0);
 }
