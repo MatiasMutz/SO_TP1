@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
     int count = 1;
 
     printf("Cantidad de archivos: %d\nCantidad de esclavos: %d\n", filesQty, slavesQty);
+
     for (int i = 0; i < slavesQty; i++) {
         if (pipe(fdsWrite[i]) < 0 || pipe(fdsRead[i]) < 0) { // Creo un pipe, antes del fork asi ambos procesos lo tienen
             perror("pipe creation error");
@@ -32,12 +33,13 @@ int main(int argc, char *argv[]) {
 
             for (int j = 0; j < INITIAL_LOAD && count <= filesQty; j++, count++) {
                 int length = strlen(argv[count]);
-                char aux[length + 1];//todo estaba bien declarar array no estático con tamaño variable o hay que usar malloc y free?
+                char aux[length + 1]; //todo estaba bien declarar array no estático con tamaño variable o hay que usar malloc y free?
                 strcpy(aux, argv[count]);
                 aux[length] = ' ';
-                write(STDOUT_FILENO, aux, length + 1);
+                write(fdsWrite[i][STDOUT_FILENO], aux, length + 1);
                 filesRemaining--;
             }
+
             close(fdsWrite[i][STDIN_FILENO]); // Cerramos ambos extremos
             close(fdsWrite[i][STDOUT_FILENO]);
 
@@ -45,18 +47,15 @@ int main(int argc, char *argv[]) {
             close(fdsRead[i][STDOUT_FILENO]);
         } else {
             // HIJO
-
             close(STDIN_FILENO); // Cerramos STDIN en padre
             dup(fdsWrite[i][STDIN_FILENO]); // Dupeamos read end of pipe -> Lo manda a STDIN
             close(fdsWrite[i][STDIN_FILENO]); // Cerrramos ambos extremos del pipe
             close(fdsWrite[i][STDOUT_FILENO]);
 
-/*
             close(STDOUT_FILENO); // Cerramos STDOUT en padre
             dup(fdsRead[i][STDOUT_FILENO]); // Dupeamos write end of pipe -> Lo manda a STDOUT
             close(fdsRead[i][STDIN_FILENO]); // Cerrramos ambos extremos del pipe
             close(fdsRead[i][STDOUT_FILENO]);
-*/
             execve("slave", NULL, NULL);
         }
         waitpid(pid, &status, 0);

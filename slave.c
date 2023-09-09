@@ -9,7 +9,7 @@ void cleanPath(char *path) {
 int main(int argc, char *argv[]) {
     char buffer[256] = {'\0'};
     read(STDIN_FILENO, buffer, 256);
-    //printf("%s\n", buffer);
+    printf("%s\n", buffer);
 
     pid_t pid;
     int status;
@@ -20,11 +20,13 @@ int main(int argc, char *argv[]) {
     for (int i = 0, j = 0; buffer[j]; i++, j++) {
         if (buffer[j] == ' ') {
             if (fork() != 0) {
+                /*
                 wstatus = waitpid(pid, &status, 0);
                 if(wstatus == -1){
                     perror("Waitpid Error");
                     exit(EXIT_FAILURE);
                 }
+                 */
             }
             else{
                 execlp("md5sum", "md5sum", path, NULL);
