@@ -1,7 +1,18 @@
 #include "include/app.h"
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-void sendToSlave(int slaveNumber, int fdsWrite[][2], char *path, int *filesRemaining, int *count) {
+
+typedef struct {
+    int number;
+    int filesProcessed;
+    pid_t pid;
+} slave;
+
+//void sendToSlave(int slaveNumber, int fdsWrite[][2], char *path, int *filesRemaining, int *count) {
+void sendToSlave(slave slave[], int fdsWrite[][2], char *path, int *filesRemaining, int *count, int slaveNumber) {
     int length = strlen(path);
     //todo estaba bien declarar array no estático con tamaño variable o hay que usar malloc y free?
     char aux[length + 1];
@@ -10,6 +21,7 @@ void sendToSlave(int slaveNumber, int fdsWrite[][2], char *path, int *filesRemai
     write(fdsWrite[slaveNumber][STDOUT_FILENO], aux, length + 1);
     (*filesRemaining)--;
     (*count)++;
+    slave[slaveNumber].filesProcessed++;
 }
 
 
@@ -24,24 +36,33 @@ int main(int argc, char *argv[]) {
     int status;
     pid_t pid;
 
+    //disable buffering
+    setvbuf(stdout, NULL, _IONBF, 0);
+
     int fdsWrite[slavesQty][2]; // Array de pipes de escritura
     int fdsRead[slavesQty][2]; // Array de pipes de lectura
 
+    slave slaves[slavesQty];
+
     int count = 1;
+
 
     printf("Cantidad de archivos: %d\nCantidad de esclavos: %d\n", filesQty, slavesQty);
 
     for (int i = 0; i < slavesQty; i++) {
-        if (pipe(fdsWrite[i]) < 0 ||
-            pipe(fdsRead[i]) < 0) { // Creo un pipe, antes del fork asi ambos procesos lo tienen
+        slaves[i].number = i;
+        slaves[i].filesProcessed = 0;
+        if (pipe(fdsWrite[i]) < 0 || pipe(fdsRead[i]) < 0) {
+            // Creo un pipe, antes del fork asi ambos procesos lo tienen
             perror("pipe creation error");
             exit(EXIT_FAILURE);
         }
         if ((pid = fork()) != 0) {
             // PADRE
-
+            slaves[i].pid = pid;
             for (int j = 0; j < INITIAL_LOAD && count <= filesQty; j++) {
-                sendToSlave(i, fdsWrite, argv[count], &filesRemaining, &count);
+               // sendToSlave(i, fdsWrite, argv[count], &filesRemaining, &count);
+               sendToSlave(slaves, fdsWrite, argv[count], &filesRemaining, &count, i);
             }
             close(fdsWrite[i][0]);
 
@@ -66,6 +87,10 @@ int main(int argc, char *argv[]) {
     int retval;
     fd_set rdfs;
     int maxFd;
+    char buffer[256] = {'\0'};
+    int charsRead;
+
+    int fd = open("output.txt", O_WRONLY | O_APPEND | O_CREAT, 0644);
 
     while (filesRemaining > 0) {
         FD_ZERO(&rdfs); //elimina todos los fd, vacia el array
@@ -84,19 +109,23 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < slavesQty; i++) {
                 if (FD_ISSET(fdsRead[i][STDIN_FILENO], &rdfs)) {
                     // si elimino un fd del set tengo que volver a calcular el maximo
-                    //int fp = open("resultado.txt", O_WRONLY | O_APPEND | O_CREAT, 0644);
+                    charsRead = read(fdsRead[i][STDIN_FILENO], buffer, 256);
+                    buffer[charsRead] = '\0';
+                    dprintf(fd, "PID: %d %s", slaves[i].pid, buffer);
 
-                    if (filesRemaining > 0) {//aca hay que chequear que el esclavo ya haya terminado de procesar los primeros 5 archivos.
-                        sendToSlave(i, fdsWrite, argv[count], &filesRemaining, &count);
+                    if (filesRemaining > 0 && slaves[i].filesProcessed >= 5) {//aca hay que chequear que el esclavo ya haya terminado de procesar los primeros 5 archivos.
+                        sendToSlave(slaves, fdsWrite, argv[count], &filesRemaining, &count, i);
                     }
                 }
             }
         }
     }
+
     for (int i = 0; i < slavesQty; i++) {
         close(fdsRead[i][0]);
         close(fdsWrite[i][1]);
 
     }
+    close(fd);
     return 0;
 }

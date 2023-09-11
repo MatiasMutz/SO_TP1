@@ -1,4 +1,5 @@
 #include "include/slave.h"
+#include <stdio.h>
 
 void cleanPath(char *path) {
     for (int i = 0; path[i]; i++) {
@@ -7,9 +8,12 @@ void cleanPath(char *path) {
 }
 
 int main(int argc, char *argv[]) {
+    setvbuf(stdout, NULL, _IONBF, 0);
     while(1) {
         char buffer[256] = {'\0'};
-        read(STDIN_FILENO, buffer, 256);
+        if (read(STDIN_FILENO, buffer, 256) == 0) {
+            return 0;
+        }
 
         pid_t pid;
         int status;
