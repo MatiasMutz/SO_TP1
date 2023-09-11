@@ -7,7 +7,7 @@ void sendToSlave(int slaveNumber, int fdsWrite[][2], char *path, int *filesRemai
     char aux[length + 1];
     strcpy(aux, path);
     aux[length] = ' ';
-    write(STDOUT_FILENO, aux, length + 1);
+    write(fdsWrite[slaveNumber][STDOUT_FILENO], aux, length + 1);
     (*filesRemaining)--;
     (*count)++;
 }
@@ -19,8 +19,7 @@ int main(int argc, char *argv[]) {
     int filesQty = argc - 1;
     int filesRemaining = filesQty;
 
-    //int slavesQty = (int) ceil(((double) filesQty / FILES_PER_SLAVE));
-    int slavesQty = 2;
+    int slavesQty = (int) ceil(((double) filesQty / FILES_PER_SLAVE));
 
     int status;
     pid_t pid;
@@ -40,36 +39,28 @@ int main(int argc, char *argv[]) {
         }
         if ((pid = fork()) != 0) {
             // PADRE
-            close(STDOUT_FILENO); // Cerramos STDOUT en padre
-            dup(fdsWrite[i][STDOUT_FILENO]); // Dupeamos write end of pipe -> Lo manda a STDOUT
-
-            close(STDIN_FILENO); // Cerramos STDIN en padre
-            dup(fdsRead[i][STDIN_FILENO]); // Dupeamos read end of pipe -> Lo manda a STDIN
-
 
             for (int j = 0; j < INITIAL_LOAD && count <= filesQty; j++) {
                 sendToSlave(i, fdsWrite, argv[count], &filesRemaining, &count);
             }
+            close(fdsWrite[i][0]);
 
-            //close(fdsWrite[i][STDIN_FILENO]); // Cerramos ambos extremos
-            //close(fdsWrite[i][STDOUT_FILENO]);
-
-            //close(fdsRead[i][STDIN_FILENO]); // Cerramos ambos extremos
-            //close(fdsRead[i][STDOUT_FILENO]);
+            close(fdsRead[i][1]);
         } else {
             // HIJO
             close(STDIN_FILENO); // Cerramos STDIN en padre
             dup(fdsWrite[i][STDIN_FILENO]); // Dupeamos read end of pipe -> Lo manda a STDIN
-            //close(fdsWrite[i][STDIN_FILENO]); // Cerrramos ambos extremos del pipe
-            //close(fdsWrite[i][STDOUT_FILENO]);
+            close(fdsWrite[i][STDIN_FILENO]); // Cerrramos ambos extremos del pipe
+            close(fdsWrite[i][STDOUT_FILENO]);
 
             close(STDOUT_FILENO); // Cerramos STDOUT en padre
             dup(fdsRead[i][STDOUT_FILENO]); // Dupeamos write end of pipe -> Lo manda a STDOUT
-            //close(fdsRead[i][STDIN_FILENO]); // Cerrramos ambos extremos del pipe
-            //close(fdsRead[i][STDOUT_FILENO]);
+            close(fdsRead[i][STDIN_FILENO]); // Cerrramos ambos extremos del pipe
+            close(fdsRead[i][STDOUT_FILENO]);
             execve("slave", newargv, newenv);
+            perror("Error in execve.");
+            exit(EXIT_FAILURE);
         }
-        waitpid(pid, &status, 0);
     }
 
     int retval;
@@ -90,12 +81,12 @@ int main(int argc, char *argv[]) {
             perror("select()");
             exit(EXIT_FAILURE);
         } else if (retval) {
-            for (int i = 0; i <= maxFd; i++) {
+            for (int i = 0; i < slavesQty; i++) {
                 if (FD_ISSET(fdsRead[i][STDIN_FILENO], &rdfs)) {
                     // si elimino un fd del set tengo que volver a calcular el maximo
                     //int fp = open("resultado.txt", O_WRONLY | O_APPEND | O_CREAT, 0644);
 
-                    if (filesRemaining > 0) {
+                    if (filesRemaining > 0) {//aca hay que chequear que el esclavo ya haya terminado de procesar los primeros 5 archivos.
                         sendToSlave(i, fdsWrite, argv[count], &filesRemaining, &count);
                     }
                 }
@@ -103,10 +94,9 @@ int main(int argc, char *argv[]) {
         }
     }
     for (int i = 0; i < slavesQty; i++) {
-        close(fdsRead[i][STDIN_FILENO]);
-        close(fdsRead[i][STDOUT_FILENO]);
-        close(fdsWrite[i][STDIN_FILENO]);
-        close(fdsWrite[i][STDOUT_FILENO]);
+        close(fdsRead[i][0]);
+        close(fdsWrite[i][1]);
+
     }
     return 0;
 }
