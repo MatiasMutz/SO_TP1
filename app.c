@@ -6,20 +6,12 @@ typedef struct {
     pid_t pid;
 } slave;
 
-//void sendToSlave(int slaveNumber, int fdsWrite[][2], char *path, int *filesRemaining, int *count) {
-/*
-void sendToSlave(slave slave[], int fdsWrite[][2], char *path, int *filesRemaining, int *count, int slaveNumber) {
-    int length = strlen(path);
-    //todo estaba bien declarar array no estático con tamaño variable o hay que usar malloc y free?
-    char aux[length + 1];
-    strcpy(aux, path);
-    aux[length] = ' ';
-    write(fdsWrite[slaveNumber][STDOUT_FILENO], aux, length + 1);
-    (*filesRemaining)--;
-    (*count)++;
-    slave[slaveNumber].filesProcessed++;
-}*/
 
+void cleanPath(char *path) {
+    for (int i = 0; path[i]; i++) {
+        path[i] = '\0';
+    }
+}
 
 void checkRealloc(const char *s) {
     if (s == NULL) {
@@ -31,7 +23,7 @@ void checkRealloc(const char *s) {
 void sendToSlave(slave slave[], int fdsWrite[][2], const char *path, int *filesRemaining, int *count, int slaveNumber) {
     char *toSend = NULL;
     size_t len;
-    for(len = 0; path[len]; len++) {
+    for (len = 0; path[len]; len++) {
         if (len % BLOQUE == 0) {
             toSend = realloc(toSend, sizeof(char) * (len + BLOQUE));
             checkRealloc(toSend);
@@ -108,7 +100,7 @@ int main(int argc, char *argv[]) {
     fd_set rdfs;
     int maxFd;
 
-    int fd = open("output.txt", O_WRONLY | O_APPEND | O_CREAT, 0644);
+    int fd = open("output.txt", O_WRONLY | O_CREAT, 0644);
 
     while (filesRemaining > 0) {
         FD_ZERO(&rdfs); //elimina todos los fd, vacia el array
@@ -127,12 +119,22 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < slavesQty && filesRemaining > 0; i++) {
                 if (FD_ISSET(fdsRead[i][STDIN_FILENO], &rdfs)) {
                     // si elimino un fd del set tengo que volver a calcular el maximo
-                    charsRead = read(fdsRead[i][STDIN_FILENO], buffer, 256);
 
+                    charsRead = read(fdsRead[i][STDIN_FILENO], buffer, 256);
                     buffer[charsRead] = '\0';
                     dprintf(fd, "PID: %d %s", slaves[i].pid, buffer);
 
-                    if (slaves[i].filesProcessed >= INITIAL_LOAD) {//aca hay que chequear que el esclavo ya haya terminado de procesar los primeros 5 archivos.
+                    char aux[256] = {'\0'};
+                    for (int j = 0; j < charsRead; j++) {
+                        aux[j] = buffer[j];
+                        if (buffer[j] == '\n') {
+                            aux[j] = '\n';
+                            dprintf(fd, "PID: %d %s", slaves[i].pid, aux);
+                            cleanPath(aux);
+                        }
+                    }
+
+                    if (slaves[i].filesProcessed >= INITIAL_LOAD) {
                         sendToSlave(slaves, fdsWrite, argv[count], &filesRemaining, &count, i);
                     }
                 }
