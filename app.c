@@ -4,9 +4,8 @@ typedef struct {
     int number;
     int filesProcessed;
     pid_t pid;
-    int hasOne;
+    // int isWorking;
 } slave;
-
 
 void cleanPath(char *path) {
     for (int i = 0; path[i]; i++) {
@@ -21,7 +20,7 @@ void checkRealloc(const char *s) {
     }
 }
 
-void sendToSlave(slave slave[], int fdsWrite[][2], const char *path, int *filesRemaining, int *count, int slaveNumber) {
+void sendToSlave(slave slave[], int fdsWrite[][2], const char *path, int *count, int slaveNumber) {
     char *toSend = NULL;
     size_t len;
     for (len = 0; path[len]; len++) {
@@ -36,26 +35,24 @@ void sendToSlave(slave slave[], int fdsWrite[][2], const char *path, int *filesR
     toSend[len] = ' ';
     write(fdsWrite[slaveNumber][STDOUT_FILENO], toSend, len + 1);
     free(toSend);
-    //(*filesRemaining)--;
     (*count)++;
-    slave[slaveNumber].hasOne = 1;
-    //slave[slaveNumber].filesProcessed++;
+    // slave[slaveNumber].isWorking = 1;
+    // slave[slaveNumber].filesProcessed++;
 }
 
 int main(int argc, char *argv[]) {
     int filesQty = argc - 1;
     int filesRemaining = filesQty;
 
-    int slavesQty = (int) ceil(((double) filesQty / FILES_PER_SLAVE));
+    int slavesQty = (int)ceil(((double)filesQty / FILES_PER_SLAVE));
 
-    int status;
     pid_t pid;
 
-    //disable buffering
+    // disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    int fdsWrite[slavesQty][2]; // Array de pipes de escritura
-    int fdsRead[slavesQty][2]; // Array de pipes de lectura
+    int fdsWrite[slavesQty][2];  // Array de pipes de escritura
+    int fdsRead[slavesQty][2];   // Array de pipes de lectura
 
     slave slaves[slavesQty];
 
@@ -74,8 +71,7 @@ int main(int argc, char *argv[]) {
             // PADRE
             slaves[i].pid = pid;
             for (int j = 0; j < INITIAL_LOAD && count <= filesQty; j++) {
-                // sendToSlave(i, fdsWrite, argv[count], &filesRemaining, &count);
-                sendToSlave(slaves, fdsWrite, argv[count], &filesRemaining, &count, i);
+                sendToSlave(slaves, fdsWrite, argv[count], &count, i);
             }
             close(fdsWrite[i][STDIN_FILENO]);
             close(fdsRead[i][STDOUT_FILENO]);
@@ -90,7 +86,7 @@ int main(int argc, char *argv[]) {
             dup(fdsRead[i][STDOUT_FILENO]);
             close(fdsRead[i][STDIN_FILENO]);
             close(fdsRead[i][STDOUT_FILENO]);
-            execve("slave", (char *[]) {NULL}, (char *[]) {NULL});
+            execve("slave", (char *[]){NULL}, (char *[]){NULL});
             perror("Error in execve");
             exit(EXIT_FAILURE);
         }
@@ -104,54 +100,54 @@ int main(int argc, char *argv[]) {
 
     int fd = open("output.txt", O_WRONLY | O_CREAT, 0644);
 
-    while (filesRemaining > slavesQty) {
-        FD_ZERO(&rdfs); //elimina todos los fd, vacia el array
+    while (filesRemaining > 0) {
+        FD_ZERO(&rdfs);  // elimina todos los fd, vacia el array
         maxFd = 0;
+
         for (int i = 0; i < slavesQty; i++) {
             // para monitorear cuando hay info disponible en stdin. Agrega el fd al array
             FD_SET(fdsRead[i][STDIN_FILENO], &rdfs);
             if (fdsRead[i][STDIN_FILENO] > maxFd)
                 maxFd = fdsRead[i][STDIN_FILENO];
         }
-        retval = select(maxFd + 1, &rdfs, NULL, NULL, NULL); // espera a que haya info disponible en stdin
+
+        retval = select(maxFd + 1, &rdfs, NULL, NULL, NULL);  // espera a que haya info disponible en stdin
+
         if (retval == -1) {
             perror("Error in select");
             exit(EXIT_FAILURE);
-        } else if (retval) {
-            for (int i = 0; i < slavesQty && filesRemaining > slavesQty; i++) {
-                if (FD_ISSET(fdsRead[i][STDIN_FILENO], &rdfs)) {
-                    // si elimino un fd del set tengo que volver a calcular el maximo
+        }
 
-                    charsRead = read(fdsRead[i][STDIN_FILENO], buffer, 256);
-                    buffer[charsRead] = '\0';
-
-                    char aux[256] = {'\0'};
-                    for (int j = 0, z = 0; j < charsRead; j++, z++) {
-                        aux[z] = buffer[j];
-                        if (buffer[j] == '\n') {
-                            slaves[i].hasOne = 0;
-                            filesRemaining--;
-                            dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
-                            slaves[i].filesProcessed++;
-                            cleanPath(aux);
-                        }
+        for (int i = 0; i < slavesQty && filesRemaining > 0; i++) {
+            if (FD_ISSET(fdsRead[i][STDIN_FILENO], &rdfs)) {
+                // si elimino un fd del set tengo que volver a calcular el maximo
+                charsRead = read(fdsRead[i][STDIN_FILENO], buffer, 256);
+                buffer[charsRead] = '\0';
+                char aux[256] = {'\0'};
+                for (int j = 0; j < charsRead; j++) {
+                    aux[j] = buffer[j];
+                    if (buffer[j] == '\n') {
+                        // slaves[i].isWorking = 0;
+                        filesRemaining--;
+                        dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
+                        slaves[i].filesProcessed++;
+                        cleanPath(aux);
                     }
-
-                    if (slaves[i].filesProcessed >= INITIAL_LOAD) {
-                        sendToSlave(slaves, fdsWrite, argv[count], &filesRemaining, &count, i);
-                    }
+                }
+                if (slaves[i].filesProcessed >= INITIAL_LOAD && filesRemaining > 0 && count <= filesQty) {
+                    sendToSlave(slaves, fdsWrite, argv[count], &count, i);
                 }
             }
         }
     }
 
     for (int i = 0; i < slavesQty; i++) {
-        if (slaves[i].hasOne) {
+        /* if (slaves[i].isWorking) {
             char aux[256] = {'\0'};
             int charsRead = read(fdsRead[i][STDIN_FILENO], aux, 256);
             aux[charsRead] = '\0';
             dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
-        }
+        } */
         close(fdsRead[i][0]);
         close(fdsWrite[i][1]);
     }
