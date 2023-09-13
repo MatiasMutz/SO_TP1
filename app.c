@@ -4,6 +4,7 @@ typedef struct {
     int number;
     int filesProcessed;
     pid_t pid;
+    int hasOne;
 } slave;
 
 
@@ -35,9 +36,10 @@ void sendToSlave(slave slave[], int fdsWrite[][2], const char *path, int *filesR
     toSend[len] = ' ';
     write(fdsWrite[slaveNumber][STDOUT_FILENO], toSend, len + 1);
     free(toSend);
-    (*filesRemaining)--;
+    //(*filesRemaining)--;
     (*count)++;
-    slave[slaveNumber].filesProcessed++;
+    slave[slaveNumber].hasOne = 1;
+    //slave[slaveNumber].filesProcessed++;
 }
 
 int main(int argc, char *argv[]) {
@@ -102,7 +104,7 @@ int main(int argc, char *argv[]) {
 
     int fd = open("output.txt", O_WRONLY | O_CREAT, 0644);
 
-    while (filesRemaining > 0) {
+    while (filesRemaining > slavesQty) {
         FD_ZERO(&rdfs); //elimina todos los fd, vacia el array
         maxFd = 0;
         for (int i = 0; i < slavesQty; i++) {
@@ -116,20 +118,21 @@ int main(int argc, char *argv[]) {
             perror("Error in select");
             exit(EXIT_FAILURE);
         } else if (retval) {
-            for (int i = 0; i < slavesQty && filesRemaining > 0; i++) {
+            for (int i = 0; i < slavesQty && filesRemaining > slavesQty; i++) {
                 if (FD_ISSET(fdsRead[i][STDIN_FILENO], &rdfs)) {
                     // si elimino un fd del set tengo que volver a calcular el maximo
 
                     charsRead = read(fdsRead[i][STDIN_FILENO], buffer, 256);
                     buffer[charsRead] = '\0';
-                    dprintf(fd, "PID: %d %s", slaves[i].pid, buffer);
 
                     char aux[256] = {'\0'};
-                    for (int j = 0; j < charsRead; j++) {
-                        aux[j] = buffer[j];
+                    for (int j = 0, z = 0; j < charsRead; j++, z++) {
+                        aux[z] = buffer[j];
                         if (buffer[j] == '\n') {
-                            aux[j] = '\n';
-                            dprintf(fd, "PID: %d %s", slaves[i].pid, aux);
+                            slaves[i].hasOne = 0;
+                            filesRemaining--;
+                            dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
+                            slaves[i].filesProcessed++;
                             cleanPath(aux);
                         }
                     }
@@ -141,7 +144,14 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
     for (int i = 0; i < slavesQty; i++) {
+        if (slaves[i].hasOne) {
+            char aux[256] = {'\0'};
+            int charsRead = read(fdsRead[i][STDIN_FILENO], aux, 256);
+            aux[charsRead] = '\0';
+            dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
+        }
         close(fdsRead[i][0]);
         close(fdsWrite[i][1]);
     }
