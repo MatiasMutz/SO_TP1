@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99
+CFLAGS = -Wall -pedantic -std=c99 -fsanitize=address -g
 LFLAGS = -lm
 SOURCES = $(wildcard *.c)
 EXECUTABLES = $(SOURCES:.c=)
@@ -12,7 +12,7 @@ all: $(EXECUTABLES)
 	$(CC) $< $(CFLAGS) $(LFLAGS) -o $@
 
 clean:
-	rm -f $(EXECUTABLES) output.txt
+	rm -f $(EXECUTABLES) *.txt
 
 .PHONY: clean all
 
