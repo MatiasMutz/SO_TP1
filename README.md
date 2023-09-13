@@ -4,16 +4,16 @@ Repositorio para el **TP1** de la materia **Sistemas Operativos** en el **ITBA**
 
 ## Tabla de Contenidos
 
-  - [SO TP1](#so-tp1)
-    - [Autores](#autores)
-    - [Tabla de Contenidos](#tabla-de-contenidos)
-    - [Requisitos](#requisitos)
-    - [Instalacion](#instalacion)
-      - [Docker](#docker)
-        - [Descargar imagen](#descargar-imagen)
-        - [Ejecutar el contenedor](#ejecutar-el-contenedor)
-        - [Correr el contenedor](#correr-el-contenedor)
-        - [Aliases](#aliases)
+- [SO TP1](#so-tp1)
+  - [Tabla de Contenidos](#tabla-de-contenidos)
+  - [Autores](#autores)
+  - [Requisitos](#requisitos)
+  - [Instalacion](#instalacion)
+    - [Docker](#docker)
+      - [Descargar imagen](#descargar-imagen)
+      - [Ejecutar el contenedor](#ejecutar-el-contenedor)
+      - [Correr el contenedor](#correr-el-contenedor)
+      - [Aliases](#aliases)
 
 ## Autores
 
