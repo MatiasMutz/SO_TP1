@@ -11,6 +11,12 @@
 
 typedef struct shmCDT *shmADT;
 
-shmADT createShM();
+shmADT createShM(int filesQty);
+
+int writeShM(shmADT shm, char *buffer, size_t size);
+
+int readShM(shmADT shm, char *buffer, size_t size);
+
+int closeShM(shmADT shm);
 
 #endif
