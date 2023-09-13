@@ -1,11 +1,6 @@
-#include "include/slave.h"
-#include <stdio.h>
+#include "lib/slave.h"
 
-void cleanPath(char *path) {
-    for (int i = 0; path[i]; i++) {
-        path[i] = '\0';
-    }
-}
+static void cleanPath(char *path);
 
 int main(int argc, char *argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -42,4 +37,10 @@ int main(int argc, char *argv[]) {
         }
     }
     return 0;
+}
+
+void cleanPath(char *path) {
+    for (int i = 0; path[i]; i++) {
+        path[i] = '\0';
+    }
 }

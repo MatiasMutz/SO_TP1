@@ -1,10 +1,18 @@
-#include "include/app.h"
+#include "lib/app.h"
+
+#define FILES_PER_SLAVE 20
+#define INITIAL_LOAD 5
+#define BLOQUE 5
 
 typedef struct {
     int number;
     int filesProcessed;
     pid_t pid;
 } slave;
+
+static void sendToSlave(slave slave[], int fdsAppToSlave[][2], const char *path, int *count, int slaveNumber);
+static void cleanPath(char *path);
+static void checkRealloc(const char *s);
 
 int main(int argc, char *argv[]) {
     int filesQty = argc - 1;
