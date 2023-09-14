@@ -21,4 +21,15 @@ int main(int argc, char *argv[]) {
     }
 
     shmADT shm = connect_shm(shmpath);
+
+    char *buffer = malloc(sizeof(char) * MAX_LEN);
+    if (buffer == NULL) {
+        perror("Error in malloc");
+        exit(EXIT_FAILURE);
+    }
+
+
+
+
+    free(buffer);
 }

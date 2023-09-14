@@ -1,6 +1,7 @@
 #include "shmADT.h"
 
 typedef struct shmCDT {
+    char path[64];
     sem_t hasData;
     unsigned int wIndex, rIndex;
     char buffer[BUFSIZ];
@@ -39,6 +40,7 @@ shmADT create_shm(const char *shmpath) {
         exit(EXIT_FAILURE);
     }
 
+    strcpy(shm->path, shmpath);
     shm->wIndex = 0;
     shm->rIndex = 0;
 
@@ -89,5 +91,5 @@ void close_shm(shmADT shm) {
         perror("Error in munmap");
         exit(EXIT_FAILURE);
     }
-    shm_unlink(shm);
+    shm_unlink(shm->path);
 }
