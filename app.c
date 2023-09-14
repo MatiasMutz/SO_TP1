@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char buffer[256] = {'\0'};
+    char buffer[BUFSIZ] = {'\0'};
     int charsRead;
     int retval;
     fd_set rdfs;
@@ -95,9 +95,9 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < slavesQty && filesRemaining > 0; i++) {
             if (FD_ISSET(fdsSlaveToApp[i][STDIN_FILENO], &rdfs)) {
                 // si elimino un fd del set tengo que volver a calcular el maximo
-                charsRead = read(fdsSlaveToApp[i][STDIN_FILENO], buffer, 256);
+                charsRead = read(fdsSlaveToApp[i][STDIN_FILENO], buffer, BUFSIZ);
                 buffer[charsRead] = '\0';
-                char aux[256] = {'\0'};
+                char aux[BUFSIZ] = {'\0'};
                 for (int j = 0; j < charsRead; j++) {
                     aux[j] = buffer[j];
                     if (buffer[j] == '\n') {
@@ -114,8 +114,8 @@ int main(int argc, char *argv[]) {
         }
     }
     for (int i = 0; i < slavesQty; i++) {
-        close(fdsSlaveToApp[i][0]);
-        close(fdsAppToSlave[i][1]);
+        close(fdsSlaveToApp[i][STDIN_FILENO]);
+        close(fdsAppToSlave[i][STDOUT_FILENO]);
     }
     close(fd);
     return 0;

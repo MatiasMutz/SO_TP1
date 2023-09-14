@@ -1,12 +1,17 @@
 #include "lib/slave.h"
 
+#define PATH_SIZE 128
+#define BUFFER_SIZE 256
+
 static void cleanPath(char *path);
 
 int main(int argc, char *argv[]) {
-    setvbuf(stdout, NULL, _IONBF, 0);
+    
+    setvbuf(STDOUT_FILENO, NULL, _IONBF, 0);
+
     while(1) {
-        char buffer[256] = {'\0'};
-        if (read(STDIN_FILENO, buffer, 256) == 0) {
+        char buffer[BUFFER_SIZE] = {'\0'};
+        if (read(STDIN_FILENO, buffer, BUFFER_SIZE) == 0) {
             return 0;
         }
 
@@ -14,7 +19,7 @@ int main(int argc, char *argv[]) {
         int status;
         int wstatus;
 
-        char path[256] = {'\0'};
+        char path[PATH_SIZE] = {'\0'};
 
         for (int i = 0, j = 0; buffer[j]; i++, j++) {
             if (buffer[j] == ' ') {
