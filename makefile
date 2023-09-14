@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99 -fsanitize=address -g
+CFLAGS = -Wall -pedantic -fsanitize=address -g
 LFLAGS = -lm
-SOURCES = $(wildcard *.c)
+SOURCES = $(wildcard *.c) $(wildcard lib/*.c)
 EXECUTABLES = $(SOURCES:.c=)
 
 all: $(EXECUTABLES)
