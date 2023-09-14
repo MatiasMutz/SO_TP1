@@ -16,11 +16,9 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
     } else {
-        printf("Error: Invalid number of arguments\n");
+        perror("Error: Invalid number of arguments\n");
         exit(EXIT_FAILURE);
     }
 
-    shmADT shm;
-
-    connect_shm(shm, shmpath);
+    shmADT shm = connect_shm(shmpath);
 }

@@ -32,7 +32,9 @@ shmADT create_shm(const char* shmpath) {
     return shm;
 }
 
-int connect_shm(shmADT shm, char *shmpath) {
+shmADT connect_shm(char *shmpath) {
+    shmADT shm;
+
     int shm_fd = shm_open(shmpath, O_RDWR, S_IRUSR | S_IWUSR);
 
     if (shm_fd == -1) {
@@ -47,7 +49,7 @@ int connect_shm(shmADT shm, char *shmpath) {
         exit(EXIT_FAILURE);
     }
 
-    return 0;
+    return shm;
 }
 
 int write_shm(shmADT shm, char *buffer, size_t size) {}

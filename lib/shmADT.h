@@ -13,7 +13,7 @@ typedef struct shmCDT *shmADT;
 
 shmADT create_shm(const char* shmpath);
 
-int connect_shm(shmADT shm, char *shmpath);
+shmADT connect_shm(char *shmpath);
 
 int write_shm(shmADT shm, char *buffer, size_t size);
 
