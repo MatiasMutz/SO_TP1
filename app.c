@@ -6,13 +6,14 @@
 #define VIEW_TIMEOUT 2
 
 typedef struct slave {
-    int number;
     int filesProcessed;
     pid_t pid;
 } slave;
 
-static void sendToSlave(slave slave[], int fdsAppToSlave[][2], const char *path, int *count, int slaveNumber);
+static void sendToSlave(int fdsAppToSlave[][2], const char *path, int *count, int slaveNumber);
+
 static void cleanPath(char *path);
+
 static void checkRealloc(const char *s);
 
 int main(int argc, char *argv[]) {
@@ -39,7 +40,6 @@ int main(int argc, char *argv[]) {
     sleep(VIEW_TIMEOUT);
 
     for (int i = 0; i < slavesQty; i++) {
-        slaves[i].number = i;
         slaves[i].filesProcessed = 0;
         if (pipe(fdsAppToSlave[i]) < 0 || pipe(fdsSlaveToApp[i]) < 0) {
             perror("pipe creation error");
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
             // PADRE
             slaves[i].pid = pid;
             for (int j = 0; j < INITIAL_LOAD && count <= filesQty; j++) {
-                sendToSlave(slaves, fdsAppToSlave, argv[count], &count, i);
+                sendToSlave(fdsAppToSlave, argv[count], &count, i);
             }
             close(fdsAppToSlave[i][STDIN_FILENO]);
             close(fdsSlaveToApp[i][STDOUT_FILENO]);
@@ -71,11 +71,11 @@ int main(int argc, char *argv[]) {
     }
 
     char buffer[BUFSIZ] = {'\0'};
-    int charsRead;
+    ssize_t charsRead;
     int retval;
     fd_set rdfs;
     int maxFd;
-
+    size_t lenAux;
     int fd = open("output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
     while (filesRemaining > 0) {
@@ -106,14 +106,23 @@ int main(int argc, char *argv[]) {
                     aux[j] = buffer[j];
                     if (buffer[j] == '\n') {
                         filesRemaining--;
-                        dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
-                        // write_shm
+
+                        //dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
+
+                        char slaveData[BUFSIZ];
+
+                        sprintf(slaveData, "PID %d %s", slaves[i].pid, aux);
+
+                        lenAux = strlen(slaveData);
+                        write(fd, slaveData, lenAux);
+                        write_shm(shm, slaveData, lenAux);
+
                         slaves[i].filesProcessed++;
                         cleanPath(aux);
                     }
                 }
                 if (slaves[i].filesProcessed >= INITIAL_LOAD && filesRemaining > 0 && count <= filesQty) {
-                    sendToSlave(slaves, fdsAppToSlave, argv[count], &count, i);
+                    sendToSlave(fdsAppToSlave, argv[count], &count, i);
                 }
             }
         }
@@ -126,7 +135,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void sendToSlave(slave slave[], int fdsAppToSlave[][2], const char *path, int *count, int slaveNumber) {
+void sendToSlave(int fdsAppToSlave[][2], const char *path, int *count, int slaveNumber) {
     char *toSend = NULL;
     size_t len;
     for (len = 0; path[len]; len++) {

@@ -15,10 +15,10 @@ shmADT create_shm(const char* shmpath);
 
 shmADT connect_shm(char *shmpath);
 
-int write_shm(shmADT shm, char *buffer, size_t size);
+void write_shm(shmADT shm, char *buffer, size_t size);
 
-int read_shm(shmADT shm, char *buffer, size_t size);
+void read_shm(shmADT shm, char *buffer, size_t size);
 
-int close_shm(shmADT shm);
+void close_shm(shmADT shm);
 
 #endif

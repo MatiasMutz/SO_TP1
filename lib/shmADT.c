@@ -1,8 +1,8 @@
 #include "shmADT.h"
 
 typedef struct shmCDT {
-    sem_t has_data;
-    size_t size;
+    sem_t hasData;
+    unsigned int wIndex, rIndex;
     char buffer[BUFSIZ];
 } shmCDT;
 
@@ -18,6 +18,8 @@ shmADT create_shm(const char *shmpath) {
 
     if (ftruncate(shm_fd, sizeof(shmCDT)) == -1) {
         perror("Error in ftruncate");
+        //shm_unlink(shmpath); todo
+        //close(shm_fd); todo
         exit(EXIT_FAILURE);
     }
 
@@ -25,13 +27,20 @@ shmADT create_shm(const char *shmpath) {
 
     if (shm == MAP_FAILED) {
         perror("Error in mmap");
+        //shm_unlink(shmpath); todo
+        //close(shm_fd); todo
         exit(EXIT_FAILURE);
     }
 
-    if (sem_init(shm->has_data, 1, 0) == -1) {
+    if (sem_init(&shm->hasData, 1, 0) == -1) {
         perror("Error in sem_init");
+        //shm_unlink(shmpath); todo
+        //close(shm_fd); todo
         exit(EXIT_FAILURE);
     }
+
+    shm->wIndex = 0;
+    shm->rIndex = 0;
 
     return shm;
 }
@@ -45,7 +54,7 @@ shmADT connect_shm(char *shmpath) {
         perror("Error in shm_open");
         exit(EXIT_FAILURE);
     }
-    
+
     shm = mmap(NULL, sizeof(*shm), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
     if (shm == MAP_FAILED) {
@@ -56,8 +65,29 @@ shmADT connect_shm(char *shmpath) {
     return shm;
 }
 
-int write_shm(shmADT shm, char *buffer, size_t size) { return 0; }
+void write_shm(shmADT shm, char *result, size_t size) {
+    if (result == NULL) {
+        perror("Error in buffer");
+        exit(EXIT_FAILURE);
+    }
+    for(int i = shm->wIndex; i < shm->wIndex + size; i++){
+        shm->buffer[i] = result[i];
+    }
+    sem_post(&shm->hasData);
+}
 
-int read_shm(shmADT shm, char *buffer, size_t size) { return 0; }
+void read_shm(shmADT shm, char *output, size_t size) {
+    sem_wait(&shm->hasData);
+    for (int i = shm->rIndex; output[i] != '\n'; i++) {
+        output[i] = shm->buffer[i];
+    }
+}
 
-int close_shm(shmADT shm) { return 0; }
+void close_shm(shmADT shm) {
+    sem_destroy(&shm->hasData);
+    if (munmap(shm, sizeof(*shm)) == -1) {
+        perror("Error in munmap");
+        exit(EXIT_FAILURE);
+    }
+    shm_unlink(shm);
+}

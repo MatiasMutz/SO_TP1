@@ -11,4 +11,9 @@
 .idea/
 test/*
 test
+app
+slave
+view
+*.o
+output.txt
 .vscode/
