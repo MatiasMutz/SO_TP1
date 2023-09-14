@@ -1,8 +1,7 @@
 #include "shmADT.h"
 
 typedef struct shmCDT {
-    sem_t sem1;
-    sem_t sem2;
+    sem_t has_data;
     size_t size;
     char buffer[BUFSIZ];
 } shmCDT;
@@ -26,6 +25,11 @@ shmADT create_shm(const char *shmpath) {
 
     if (shm == MAP_FAILED) {
         perror("Error in mmap");
+        exit(EXIT_FAILURE);
+    }
+
+    if (sem_init(shm->has_data, 1, 0) == -1) {
+        perror("Error in sem_init");
         exit(EXIT_FAILURE);
     }
 
