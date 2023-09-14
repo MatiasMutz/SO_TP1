@@ -6,9 +6,9 @@
 static void cleanPath(char *path);
 
 int main(int argc, char *argv[]) {
-    
-    setvbuf(STDOUT_FILENO, NULL, _IONBF, 0);
 
+    setvbuf(stdout, NULL, _IONBF, 0);
+    
     while(1) {
         char buffer[BUFFER_SIZE] = {'\0'};
         if (read(STDIN_FILENO, buffer, BUFFER_SIZE) == 0) {
