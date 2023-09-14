@@ -38,8 +38,6 @@ int main(int argc, char *argv[]) {
     putchar('\0');
     sleep(VIEW_TIMEOUT);
 
-    printf("Cantidad de archivos: %d\nCantidad de esclavos: %d\n", filesQty, slavesQty);
-
     for (int i = 0; i < slavesQty; i++) {
         slaves[i].number = i;
         slaves[i].filesProcessed = 0;

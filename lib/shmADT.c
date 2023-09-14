@@ -7,7 +7,7 @@ typedef struct shmCDT {
     char buffer[BUFSIZ];
 } shmCDT;
 
-shmADT create_shm(const char* shmpath) {
+shmADT create_shm(const char *shmpath) {
     shmADT shm;
 
     int shm_fd = shm_open(shmpath, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
@@ -41,7 +41,7 @@ shmADT connect_shm(char *shmpath) {
         perror("Error in shm_open");
         exit(EXIT_FAILURE);
     }
-
+    
     shm = mmap(NULL, sizeof(*shm), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
     if (shm == MAP_FAILED) {
@@ -52,14 +52,8 @@ shmADT connect_shm(char *shmpath) {
     return shm;
 }
 
-int write_shm(shmADT shm, char *buffer, size_t size) {
-    return 0;
-}
+int write_shm(shmADT shm, char *buffer, size_t size) { return 0; }
 
-int read_shm(shmADT shm, char *buffer, size_t size) {
-    return 0;
-}
+int read_shm(shmADT shm, char *buffer, size_t size) { return 0; }
 
-int close_shm(shmADT shm) {
-    return 0;
-}
+int close_shm(shmADT shm) { return 0; }

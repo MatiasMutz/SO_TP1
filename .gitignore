@@ -10,4 +10,5 @@
 *.out
 .idea/
 test/*
+test
 .vscode/
