@@ -1,18 +1,20 @@
-CC = gcc
-CFLAGS = -Wall -pedantic -fsanitize=address -g
-LFLAGS = -lm
-SOURCES = $(wildcard *.c) $(wildcard lib/*.c)
-EXECUTABLES = $(SOURCES:.c=)
+CC=gcc
+CFLAGS =-g -Wall -pedantic -fsanitize=address
+CLIBS = -lrt -lpthread -lm
+SOURCES = $(wildcard lib/*.c)
+OBJECTS = $(SOURCES:.c=.o)
+EXECUTABLES = app slave view
+INCLUDES = $(wildcard *.h) $(wildcard lib/*.h)
 
-all: $(EXECUTABLES)
-	./app ./test/*
-# BORRAR LINEA DE ARRIBA ANTES DE ENTREGAR
+all: $(EXECUTABLES) $(OBJECTS)
 
-%: %.c
-	$(CC) $< $(CFLAGS) $(LFLAGS) -o $@
+%.o: %.c $(SOURCES) $(INCLUDES)
+	@$(CC) $(CFLAGS) -c $< -o $@
 
-clean:
-	rm -f $(EXECUTABLES) *.txt
+$(EXECUTABLES): %: %.o $(OBJECTS)
+	@$(CC) $(CFLAGS) $< $(OBJECTS) -o $@ $(CLIBS)
 
 .PHONY: clean all
+clean:
+	@rm -rf $(EXECUTABLES) *.txt $(OBJECTS) *.o
 
