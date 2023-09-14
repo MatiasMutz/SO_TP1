@@ -3,8 +3,9 @@
 #define FILES_PER_SLAVE 20
 #define INITIAL_LOAD 5
 #define BLOQUE 5
+#define VIEW_TIMEOUT 2
 
-typedef struct {
+typedef struct slave {
     int number;
     int filesProcessed;
     pid_t pid;
@@ -31,6 +32,11 @@ int main(int argc, char *argv[]) {
     slave slaves[slavesQty];
 
     int count = 1;
+
+    shmADT shm = create_shm("/shm");
+    dprintf(STDOUT_FILENO, "/shm\n");
+    putchar('\0');
+    sleep(VIEW_TIMEOUT);
 
     printf("Cantidad de archivos: %d\nCantidad de esclavos: %d\n", filesQty, slavesQty);
 
@@ -103,6 +109,7 @@ int main(int argc, char *argv[]) {
                     if (buffer[j] == '\n') {
                         filesRemaining--;
                         dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
+                        // write_shm
                         slaves[i].filesProcessed++;
                         cleanPath(aux);
                     }
