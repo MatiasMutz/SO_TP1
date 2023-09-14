@@ -52,8 +52,14 @@ shmADT connect_shm(char *shmpath) {
     return shm;
 }
 
-int write_shm(shmADT shm, char *buffer, size_t size) {}
+int write_shm(shmADT shm, char *buffer, size_t size) {
+    return 0;
+}
 
-int read_shm(shmADT shm, char *buffer, size_t size) {}
+int read_shm(shmADT shm, char *buffer, size_t size) {
+    return 0;
+}
 
-int close_shm(shmADT shm) {}
+int close_shm(shmADT shm) {
+    return 0;
+}
