@@ -18,7 +18,7 @@ shmADT connect_shm(char *shmpath);
 
 void write_shm(shmADT shm, char *buffer, size_t size);
 
-void read_shm(shmADT shm, char *buffer, size_t size);
+void read_shm(shmADT shm, char *buffer);
 
 void close_shm(shmADT shm);
 

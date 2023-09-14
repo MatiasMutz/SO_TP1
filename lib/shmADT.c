@@ -78,7 +78,7 @@ void write_shm(shmADT shm, char *result, size_t size) {
     sem_post(&shm->hasData);
 }
 
-void read_shm(shmADT shm, char *output, size_t size) {
+void read_shm(shmADT shm, char *output) {
     sem_wait(&shm->hasData);
     for (int i = shm->rIndex; output[i] != '\n'; i++) {
         output[i] = shm->buffer[i];
@@ -91,5 +91,5 @@ void close_shm(shmADT shm) {
         perror("Error in munmap");
         exit(EXIT_FAILURE);
     }
-    shm_unlink(shm->path);
+    //shm_unlink(shm->path);
 }
