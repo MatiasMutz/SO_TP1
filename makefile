@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS =-g -Wall -pedantic -fsanitize=address
+CFLAGS =-g -Wall -Wextra -pedantic -fsanitize=address
 CLIBS = -lrt -lpthread -lm
 SOURCES = $(wildcard lib/*.c)
 OBJECTS = $(SOURCES:.c=.o)
