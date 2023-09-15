@@ -19,8 +19,8 @@ shmADT create_shm(const char *shmpath) {
 
     if (ftruncate(shm_fd, sizeof(shmCDT)) == -1) {
         perror("Error in ftruncate");
-        //shm_unlink(shmpath); todo
-        //close(shm_fd); todo
+        // shm_unlink(shmpath); todo
+        // close(shm_fd); todo
         exit(EXIT_FAILURE);
     }
 
@@ -28,15 +28,15 @@ shmADT create_shm(const char *shmpath) {
 
     if (shm == MAP_FAILED) {
         perror("Error in mmap");
-        //shm_unlink(shmpath); todo
-        //close(shm_fd); todo
+        // shm_unlink(shmpath); todo
+        // close(shm_fd); todo
         exit(EXIT_FAILURE);
     }
 
     if (sem_init(&shm->hasData, 1, 0) == -1) {
         perror("Error in sem_init");
-        //shm_unlink(shmpath); todo
-        //close(shm_fd); todo
+        // shm_unlink(shmpath); todo
+        // close(shm_fd); todo
         exit(EXIT_FAILURE);
     }
 
@@ -72,7 +72,7 @@ void write_shm(shmADT shm, char *result, size_t size) {
         perror("Error in buffer");
         exit(EXIT_FAILURE);
     }
-    for(int i = shm->wIndex; i < shm->wIndex + size; i++){
+    for (int i = shm->wIndex; i < shm->wIndex + size; i++) {
         shm->buffer[i] = result[i];
     }
     sem_post(&shm->hasData);
@@ -86,10 +86,18 @@ void read_shm(shmADT shm, char *output) {
 }
 
 void close_shm(shmADT shm) {
-    sem_destroy(&shm->hasData);
+    if (sem_destroy(&shm->hasData) == -1) {
+        perror("Error in sem_destroy");
+        exit(EXIT_FAILURE);
+    }
+
     if (munmap(shm, sizeof(*shm)) == -1) {
         perror("Error in munmap");
         exit(EXIT_FAILURE);
     }
-    //shm_unlink(shm->path);
+
+    if (shm_unlink(shm->path) == -1) {
+        perror("Error in shm_unlink");
+        exit(EXIT_FAILURE);
+    }
 }

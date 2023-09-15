@@ -6,10 +6,9 @@
 static void cleanPath(char *path);
 
 int main(int argc, char *argv[]) {
-
     setvbuf(stdout, NULL, _IONBF, 0);
-    
-    while(1) {
+
+    while (1) {
         char buffer[BUFFER_SIZE] = {'\0'};
         if (read(STDIN_FILENO, buffer, BUFFER_SIZE) == 0) {
             return 0;
@@ -30,7 +29,7 @@ int main(int argc, char *argv[]) {
                         exit(EXIT_FAILURE);
                     }
                 } else {
-                    execlp("md5sum", "md5sum", path, (char *) NULL);
+                    execlp("md5sum", "md5sum", path, (char *)NULL);
                     perror("Error in execve.");
                     exit(1);
                 }

@@ -20,15 +20,15 @@ int main(int argc, char *argv[]) {
     int filesQty = argc - 1;
     int filesRemaining = filesQty;
 
-    int slavesQty = (int) ceil(((double) filesQty / FILES_PER_SLAVE));
+    int slavesQty = (int)ceil(((double)filesQty / FILES_PER_SLAVE));
 
     pid_t pid;
 
     // disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    int fdsAppToSlave[slavesQty][2]; // Array de pipes de escritura (app -> slave)
-    int fdsSlaveToApp[slavesQty][2]; // Array de pipes de lectura (slave -> app)
+    int fdsAppToSlave[slavesQty][2];  // Array de pipes de escritura (app -> slave)
+    int fdsSlaveToApp[slavesQty][2];  // Array de pipes de lectura (slave -> app)
 
     slave slaves[slavesQty];
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
             dup(fdsSlaveToApp[i][STDOUT_FILENO]);
             close(fdsSlaveToApp[i][STDIN_FILENO]);
             close(fdsSlaveToApp[i][STDOUT_FILENO]);
-            execve("slave", (char *[]) {NULL}, (char *[]) {NULL});
+            execve("slave", (char *[]){NULL}, (char *[]){NULL});
             perror("Error in execve");
             exit(EXIT_FAILURE);
         }
@@ -99,6 +99,8 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < slavesQty && filesRemaining > 0; i++) {
             if (FD_ISSET(fdsSlaveToApp[i][STDIN_FILENO], &rdfs)) {
                 // si elimino un fd del set tengo que volver a calcular el maximo
+
+                // todo: USAR GETLINE
                 charsRead = read(fdsSlaveToApp[i][STDIN_FILENO], buffer, BUFSIZ);
                 buffer[charsRead] = '\0';
                 char aux[BUFSIZ] = {'\0'};
@@ -107,9 +109,10 @@ int main(int argc, char *argv[]) {
                     if (buffer[j] == '\n') {
                         filesRemaining--;
 
-                        //dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
+                        // dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
 
-                        char slaveData[BUFSIZ];
+                        // todo: EL WARNING QUE TIRABA ES POR UN TEMA DE ESPACIOS EN EL ARREGLO
+                        char slaveData[10000];
 
                         sprintf(slaveData, "PID %d %s", slaves[i].pid, aux);
 
@@ -131,7 +134,7 @@ int main(int argc, char *argv[]) {
         close(fdsSlaveToApp[i][STDIN_FILENO]);
         close(fdsAppToSlave[i][STDOUT_FILENO]);
     }
-    close_shm(shm);
+    // close_shm(shm);
     close(fd);
     return 0;
 }
