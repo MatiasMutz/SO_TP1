@@ -5,7 +5,7 @@
 
 static void cleanPath(char *path);
 
-int main(int argc, char *argv[]) {
+int main(void) {
     setvbuf(stdout, NULL, _IONBF, 0);
 
     while (1) {

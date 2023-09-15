@@ -72,7 +72,7 @@ void write_shm(shmADT shm, char *result, size_t size) {
         perror("Error in buffer");
         exit(EXIT_FAILURE);
     }
-    for (int i = shm->wIndex; i < shm->wIndex + size; i++) {
+    for (unsigned int i = shm->wIndex; i < shm->wIndex + size; i++) {
         shm->buffer[i] = result[i];
     }
     sem_post(&shm->hasData);
