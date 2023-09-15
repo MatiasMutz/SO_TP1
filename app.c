@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
         close(fdsSlaveToApp[i][STDIN_FILENO]);
         close(fdsAppToSlave[i][STDOUT_FILENO]);
     }
-    // close_shm(shm);
+    close_shm(shm);
     close(fd);
     return 0;
 }

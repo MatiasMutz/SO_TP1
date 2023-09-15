@@ -58,5 +58,6 @@ int main(int argc, char *argv[]) {
     }
 
     // TODO: liberar memoria compartida
+    close_shm_connection(shm);
     return 0;
 }

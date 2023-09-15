@@ -67,22 +67,24 @@ shmADT connect_shm(char *shmpath) {
     return shm;
 }
 
-void write_shm(shmADT shm, char *result, size_t size) {
-    if (result == NULL) {
+void write_shm(shmADT shm, char *input, size_t size) {
+    if (input == NULL) {
         perror("Error in buffer");
         exit(EXIT_FAILURE);
     }
-    for (unsigned int i = shm->wIndex; i < shm->wIndex + size; i++) {
-        shm->buffer[i] = result[i];
-    }
+    for (unsigned int i = 0; i < size; i++, (shm->wIndex)++)
+        shm->buffer[shm->wIndex] = input[i];
     sem_post(&shm->hasData);
 }
 
 void read_shm(shmADT shm, char *output) {
     sem_wait(&shm->hasData);
-    for (int i = shm->rIndex; output[i] != '\n'; i++) {
-        output[i] = shm->buffer[i];
-    }
+    int i;
+    for (i = 0; shm->buffer[shm->rIndex] != '\n'; i++, (shm->rIndex)++)
+        output[i] = shm->buffer[shm->rIndex];
+    output[i] = '\n';
+    output[i + 1] = 0;
+    (shm->rIndex)++;
 }
 
 void close_shm(shmADT shm) {
@@ -91,6 +93,18 @@ void close_shm(shmADT shm) {
         exit(EXIT_FAILURE);
     }
 
+    if (munmap(shm, sizeof(*shm)) == -1) {
+        perror("Error in munmap");
+        exit(EXIT_FAILURE);
+    }
+
+    if (shm_unlink(shm->path) == -1) {
+        perror("Error in shm_unlink");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void close_shm_connection(shmADT shm) {
     if (munmap(shm, sizeof(*shm)) == -1) {
         perror("Error in munmap");
         exit(EXIT_FAILURE);

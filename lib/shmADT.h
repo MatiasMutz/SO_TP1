@@ -22,4 +22,6 @@ void read_shm(shmADT shm, char *buffer);
 
 void close_shm(shmADT shm);
 
+void close_shm_connection(shmADT shm);
+
 #endif
