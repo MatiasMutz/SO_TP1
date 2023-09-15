@@ -1,7 +1,9 @@
 #include "shmADT.h"
 
+#define PATH_SIZE 256
+
 typedef struct shmCDT {
-    char path[64];
+    char path[PATH_SIZE];
     sem_t hasData;
     unsigned int wIndex, rIndex;
     char buffer[BUFSIZ];
@@ -40,7 +42,12 @@ shmADT create_shm(const char *shmpath) {
         exit(EXIT_FAILURE);
     }
 
-    strcpy(shm->path, shmpath);
+    int i;
+
+    for (i = 0; shmpath[i]; i++) shm->path[i] = shmpath[i];
+
+    shm->path[i] = 0;
+
     shm->wIndex = 0;
     shm->rIndex = 0;
 
@@ -72,46 +79,36 @@ void write_shm(shmADT shm, char *input, size_t size) {
         perror("Error in buffer");
         exit(EXIT_FAILURE);
     }
-    for (unsigned int i = 0; i < size; i++, (shm->wIndex)++)
-        shm->buffer[shm->wIndex] = input[i];
+    for (unsigned int i = 0; i < size; i++, (shm->wIndex)++) shm->buffer[shm->wIndex] = input[i];
     sem_post(&shm->hasData);
 }
 
 void read_shm(shmADT shm, char *output) {
     sem_wait(&shm->hasData);
     int i;
-    for (i = 0; shm->buffer[shm->rIndex] != '\n'; i++, (shm->rIndex)++)
-        output[i] = shm->buffer[shm->rIndex];
+    for (i = 0; shm->buffer[shm->rIndex] != '\n'; i++, (shm->rIndex)++) output[i] = shm->buffer[shm->rIndex];
     output[i] = '\n';
     output[i + 1] = 0;
     (shm->rIndex)++;
 }
 
 void close_shm(shmADT shm) {
-    if (sem_destroy(&shm->hasData) == -1) {
-        perror("Error in sem_destroy");
+    if (shm_unlink(shm->path) == -1) {
+        perror("Error in shm_unlink");
         exit(EXIT_FAILURE);
     }
 
     if (munmap(shm, sizeof(*shm)) == -1) {
         perror("Error in munmap");
-        exit(EXIT_FAILURE);
-    }
-
-    if (shm_unlink(shm->path) == -1) {
-        perror("Error in shm_unlink");
         exit(EXIT_FAILURE);
     }
 }
 
 void close_shm_connection(shmADT shm) {
-    if (munmap(shm, sizeof(*shm)) == -1) {
-        perror("Error in munmap");
+    if (sem_destroy(&shm->hasData) == -1) {
+        perror("Error in sem_destroy");
         exit(EXIT_FAILURE);
     }
 
-    if (shm_unlink(shm->path) == -1) {
-        perror("Error in shm_unlink");
-        exit(EXIT_FAILURE);
-    }
+    close_shm(shm);
 }
