@@ -8,12 +8,18 @@ Repositorio para el **TP1** de la materia **Sistemas Operativos** en el **ITBA**
   - [Tabla de Contenidos](#tabla-de-contenidos)
   - [Autores](#autores)
   - [Requisitos](#requisitos)
-  - [Instalacion](#instalacion)
+  - [Instalación](#instalación)
     - [Docker](#docker)
       - [Descargar imagen](#descargar-imagen)
       - [Ejecutar el contenedor](#ejecutar-el-contenedor)
       - [Correr el contenedor](#correr-el-contenedor)
       - [Aliases](#aliases)
+  - [Ejecución](#ejecución)
+    - [Compilación](#compilación)
+    - [Ejecución sin vista](#ejecución-sin-vista)
+    - [Ejecución con pipe](#ejecución-con-pipe)
+    - [Ejecución con 2 terminales](#ejecución-con-2-terminales)
+  - [Resultados](#resultados)
 
 ## Autores
 
@@ -27,7 +33,7 @@ Para la realizacion del trabajo se requieren los siguientes elementos:
 
 - **docker:** Nos va a permitir compilar el TPE dentro de un contenedor
 
-## Instalacion
+## Instalación
 
 ### Docker
 
@@ -82,3 +88,51 @@ alias dcall="dcstart && dcexec"
 - `dcexec` en este punto falla porque no está corriendo, es necesario `dcstart` antes de utilizar `dcexec`.
 - `dcrm` es opuesto a `dcrun`.
 - `dcall` ejecuta `dcstart` y `dcexec`.
+
+## Ejecución
+
+### Compilación
+
+Para compilar el proyecto se debe correr el siguiente comando:
+
+```bash
+make
+```
+
+### Ejecución sin vista
+
+Para ejecutar el proyecto se debe correr el siguiente comando:
+
+```bash
+./app files/*
+```
+
+### Ejecución con pipe
+
+Para ejecutar el proyecto se debe correr el siguiente comando:
+
+```bash
+./app files/* | ./view
+```
+
+### Ejecución con 2 terminales
+
+Para ejecutar el proyecto se debe correr el siguiente comando:
+
+En la primer terminal:
+
+```bash
+./app files/*
+```
+
+Y en la segunda terminal:
+
+```bash
+./view /shm <number of files>
+```
+
+## Resultados
+
+Los resultados obtenidos se encuentran en el archivo [output.txt](output.txt).
+
+Si se ejecuto con una vista, los resultados también se imprimiran en la terminal
