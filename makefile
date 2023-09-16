@@ -6,7 +6,8 @@ OBJECTS = $(SOURCES:.c=.o)
 EXECUTABLES = app slave view
 INCLUDES = $(wildcard *.h) $(wildcard lib/*.h)
 
-all: $(EXECUTABLES) $(OBJECTS)
+all: $(EXECUTABLES)
+	make clean_objects
 
 %.o: %.c $(SOURCES) $(INCLUDES)
 	@$(CC) $(CFLAGS) -c $< -o $@
@@ -17,4 +18,7 @@ $(EXECUTABLES): %: %.o $(OBJECTS)
 .PHONY: clean all
 clean:
 	@rm -rf $(EXECUTABLES) *.txt $(OBJECTS) *.o
+
+clean_objects:
+	@rm -rf *.o lib/*.o
 
