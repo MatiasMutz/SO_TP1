@@ -36,7 +36,9 @@ int main(int argc, char *argv[]) {
 
     shmADT shm = create_shm("/shm");
     sleep(VIEW_TIMEOUT);
-    dprintf(STDOUT_FILENO, "/shm %d\n", filesQty);
+
+    if (!isatty(STDOUT_FILENO))
+        dprintf(STDOUT_FILENO, "/shm %d\n", filesQty);
 
     for (int i = 0; i < slavesQty; i++) {
         slaves[i].filesProcessed = 0;
