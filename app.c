@@ -4,6 +4,8 @@
 #define INITIAL_LOAD 5
 #define BLOQUE 5
 #define VIEW_TIMEOUT 2
+#define INFO_SIZE 256
+#define SLAVE_SIZE INFO_SIZE + 16
 
 typedef struct slave {
     int filesProcessed;
@@ -69,11 +71,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char buffer[BUFSIZ] = {'\0'};
-    ssize_t charsRead;
-    int retval;
+    char buffer[INFO_SIZE];
+    char slaveData[SLAVE_SIZE];
+    // char *aux = NULL;
+    int charsRead, retval, maxFd;
     fd_set rdfs;
-    int maxFd;
     size_t lenAux;
     int fd = open("output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
@@ -99,33 +101,39 @@ int main(int argc, char *argv[]) {
             if (FD_ISSET(fdsSlaveToApp[i][STDIN_FILENO], &rdfs)) {
                 // si elimino un fd del set tengo que volver a calcular el maximo
 
-                // todo: USAR GETLINE
-                charsRead = read(fdsSlaveToApp[i][STDIN_FILENO], buffer, BUFSIZ);
-                buffer[charsRead] = '\0';
-                char aux[BUFSIZ] = {'\0'};
+                charsRead = read(fdsSlaveToApp[i][STDIN_FILENO], buffer, INFO_SIZE);
+
+                /* aux = (char *)malloc(sizeof(char) * (charsRead + 1));  // +1 por el \0
+
+                if (aux == NULL) {
+                    perror("Error in malloc");
+                    exit(EXIT_FAILURE);
+                } */
+
                 for (int j = 0; j < charsRead; j++) {
-                    aux[j] = buffer[j];
+                    // aux[j] = buffer[j];
+
                     if (buffer[j] == '\n') {
+                        buffer[j + 1] = '\0';
+                        // aux [j + 1] = '\0';
+                        
                         filesRemaining--;
 
-                        // dprintf(fd, "Rem: %d. Slave: %d. PID %d %s", filesRemaining, i, slaves[i].pid, aux);
-
-                        // todo: EL WARNING QUE TIRABA ES POR UN TEMA DE ESPACIOS EN EL ARREGLO
-                        char slaveData[10000];
-
-                        sprintf(slaveData, "PID %d %s", slaves[i].pid, aux);
+                        // sprintf(slaveData, "PID %d %s", slaves[i].pid, aux);
+                        sprintf(slaveData, "PID %d %s", slaves[i].pid, buffer);
 
                         lenAux = strlen(slaveData);
                         write(fd, slaveData, lenAux);
                         write_shm(shm, slaveData, lenAux);
 
                         slaves[i].filesProcessed++;
-                        cleanPath(aux);
                     }
                 }
-                if (slaves[i].filesProcessed >= INITIAL_LOAD && filesRemaining > 0 && count <= filesQty) {
+
+                if (slaves[i].filesProcessed >= INITIAL_LOAD && filesRemaining > 0 && count <= filesQty)
                     sendToSlave(fdsAppToSlave, argv[count], &count, i);
-                }
+
+                // free(aux);
             }
         }
     }
