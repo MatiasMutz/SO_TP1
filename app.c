@@ -5,7 +5,7 @@
 #define BLOQUE 5
 #define VIEW_TIMEOUT 2
 #define INFO_SIZE 256
-#define SLAVE_SIZE INFO_SIZE + 16
+#define SLAVE_SIZE (INFO_SIZE + 16)
 
 typedef struct slave {
     int filesProcessed;
@@ -73,7 +73,6 @@ int main(int argc, char *argv[]) {
 
     char buffer[INFO_SIZE];
     char slaveData[SLAVE_SIZE];
-    // char *aux = NULL;
     int charsRead, retval, maxFd;
     fd_set rdfs;
     size_t lenAux;
@@ -103,23 +102,12 @@ int main(int argc, char *argv[]) {
 
                 charsRead = read(fdsSlaveToApp[i][STDIN_FILENO], buffer, INFO_SIZE);
 
-                /* aux = (char *)malloc(sizeof(char) * (charsRead + 1));  // +1 por el \0
-
-                if (aux == NULL) {
-                    perror("Error in malloc");
-                    exit(EXIT_FAILURE);
-                } */
-
                 for (int j = 0; j < charsRead; j++) {
-                    // aux[j] = buffer[j];
-
                     if (buffer[j] == '\n') {
                         buffer[j + 1] = '\0';
-                        // aux [j + 1] = '\0';
-                        
+
                         filesRemaining--;
 
-                        // sprintf(slaveData, "PID %d %s", slaves[i].pid, aux);
                         sprintf(slaveData, "PID %d %s", slaves[i].pid, buffer);
 
                         lenAux = strlen(slaveData);
@@ -132,8 +120,6 @@ int main(int argc, char *argv[]) {
 
                 if (slaves[i].filesProcessed >= INITIAL_LOAD && filesRemaining > 0 && count <= filesQty)
                     sendToSlave(fdsAppToSlave, argv[count], &count, i);
-
-                // free(aux);
             }
         }
     }

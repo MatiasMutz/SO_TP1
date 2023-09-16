@@ -12,6 +12,7 @@ typedef struct shmCDT {
 shmADT create_shm(const char *shmpath) {
     shmADT shm;
 
+    shm_unlink(shmpath);
     int shm_fd = shm_open(shmpath, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 
     if (shm_fd == -1) {
@@ -21,8 +22,7 @@ shmADT create_shm(const char *shmpath) {
 
     if (ftruncate(shm_fd, sizeof(shmCDT)) == -1) {
         perror("Error in ftruncate");
-        // shm_unlink(shmpath); todo
-        // close(shm_fd); todo
+        shm_unlink(shmpath);
         exit(EXIT_FAILURE);
     }
 
@@ -44,7 +44,9 @@ shmADT create_shm(const char *shmpath) {
 
     int i;
 
-    for (i = 0; shmpath[i]; i++) shm->path[i] = shmpath[i];
+    for (i = 0; shmpath[i]; i++) {
+        shm->path[i] = shmpath[i];
+    }
 
     shm->path[i] = 0;
 
@@ -79,14 +81,18 @@ void write_shm(shmADT shm, char *input, size_t size) {
         perror("Error in buffer");
         exit(EXIT_FAILURE);
     }
-    for (unsigned int i = 0; i < size; i++, (shm->wIndex)++) shm->buffer[shm->wIndex] = input[i];
+    for (unsigned int i = 0; i < size; i++, (shm->wIndex)++) {
+        shm->buffer[shm->wIndex] = input[i];
+    }
     sem_post(&shm->hasData);
 }
 
 void read_shm(shmADT shm, char *output) {
     sem_wait(&shm->hasData);
     int i;
-    for (i = 0; shm->buffer[shm->rIndex] != '\n'; i++, (shm->rIndex)++) output[i] = shm->buffer[shm->rIndex];
+    for (i = 0; shm->buffer[shm->rIndex] != '\n'; i++, (shm->rIndex)++) {
+        output[i] = shm->buffer[shm->rIndex];
+    }
     output[i] = '\n';
     output[i + 1] = 0;
     (shm->rIndex)++;

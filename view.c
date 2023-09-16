@@ -11,7 +11,6 @@ int main(int argc, char *argv[]) {
     if (argc == 3) {  // recibio el nombre de la shm por linea de comandos y la cantidad de archivos
         strcpy(shmPath, argv[1]);
         filesQty = atoi(argv[2]);
-
     } else if (argc == 1) {  // recibio el nombre de la shm por STDIN
         char *aux = NULL;
         char number[NUMBER_SIZE];
@@ -57,7 +56,6 @@ int main(int argc, char *argv[]) {
         filesQty--;
     }
 
-    // TODO: liberar memoria compartida
     close_shm_connection(shm);
     return 0;
 }

@@ -31,7 +31,7 @@ int main(void) {
                 } else {
                     execlp("md5sum", "md5sum", path, (char *) NULL);
                     perror("Error in execve.");
-                    exit(1);
+                    exit(EXIT_FAILURE);
                 }
                 clean(path);
                 i = -1;
