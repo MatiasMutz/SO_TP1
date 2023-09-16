@@ -128,7 +128,7 @@ En la primer terminal:
 Y en la segunda terminal:
 
 ```bash
-./view /shm <number of files>
+./view /shm
 ```
 
 ## Resultados
