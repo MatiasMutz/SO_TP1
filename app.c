@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
     shmADT shm = create_shm("/shm");
 
-    printf("/shm %d\n", filesQty);
+    printf("/shm\n");
     sleep(VIEW_TIMEOUT);
 
     for (int i = 0; i < slavesQty; i++) {
@@ -122,6 +122,8 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+    write_shm(shm, "\0", 1);
+    
     for (int i = 0; i < slavesQty; i++) {
         close(fdsSlaveToApp[i][STDIN_FILENO]);
         close(fdsAppToSlave[i][STDOUT_FILENO]);

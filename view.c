@@ -3,19 +3,18 @@
 #define PIPE_INFO 128
 #define PATH_SIZE 64
 #define NUMBER_SIZE 16
+#define END_READ -1
 
 int main(int argc, char *argv[]) {
     char shmPath[PATH_SIZE];
-    int filesQty;
 
-    if (argc == 3) {  // recibio el nombre de la shm por linea de comandos y la cantidad de archivos
+    if (argc == 2) {  // recibio el nombre de la shm por linea de comandos
         strcpy(shmPath, argv[1]);
-        filesQty = atoi(argv[2]);
+
     } else if (argc == 1) {  // recibio el nombre de la shm por STDIN
         char *aux = NULL;
-        char number[NUMBER_SIZE];
         size_t infoSize = 0;
-        int delimiterPos;
+        int i = 0;
 
         if (getline(&aux, &infoSize, stdin) == -1) {
             free(aux);
@@ -23,21 +22,11 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
 
-        for (delimiterPos = 0; aux[delimiterPos] != ' '; delimiterPos++) {
-            shmPath[delimiterPos] = aux[delimiterPos];
+        for (int i = 0; aux[i] != '\n'; i++) {
+            shmPath[i] = aux[i];
         }
 
-        shmPath[delimiterPos] = 0;
-
-        int j = 0;
-
-        for (size_t i = delimiterPos + 1; aux[i] != '\n'; i++, j++) {
-            number[j] = aux[i];
-        }
-
-        number[j] = 0;
-
-        filesQty = atoi(number);
+        shmPath[i - 1] = 0;
 
         free(aux);
 
@@ -50,10 +39,8 @@ int main(int argc, char *argv[]) {
 
     char buffer[BUFSIZ];
 
-    while (filesQty > 0) {
-        read_shm(shm, buffer);
+    while (read_shm(shm, buffer) != END_READ) {
         printf("%s", buffer);
-        filesQty--;
     }
 
     close_shm_connection(shm);

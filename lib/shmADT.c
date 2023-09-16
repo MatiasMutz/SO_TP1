@@ -87,15 +87,21 @@ void write_shm(shmADT shm, char *input, size_t size) {
     sem_post(&shm->hasData);
 }
 
-void read_shm(shmADT shm, char *output) {
+int read_shm(shmADT shm, char *output) {
     sem_wait(&shm->hasData);
     int i;
+
+    if(shm->buffer[shm->rIndex] == '\0')
+        return -1;
+
     for (i = 0; shm->buffer[shm->rIndex] != '\n'; i++, (shm->rIndex)++) {
         output[i] = shm->buffer[shm->rIndex];
     }
     output[i] = '\n';
     output[i + 1] = 0;
     (shm->rIndex)++;
+
+    return 0;
 }
 
 void close_shm(shmADT shm) {
