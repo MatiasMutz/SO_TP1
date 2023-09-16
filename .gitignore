@@ -17,5 +17,5 @@ app
 slave
 view
 *.o
-output.txt
+*.txt
 .vscode/
