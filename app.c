@@ -14,8 +14,6 @@ typedef struct slave {
 
 static void sendToSlave(int fdsAppToSlave[][2], const char *path, int *count, int slaveNumber);
 
-static void cleanPath(char *path);
-
 static void checkRealloc(const char *s);
 
 int main(int argc, char *argv[]) {
@@ -168,11 +166,5 @@ void checkRealloc(const char *s) {
     if (s == NULL) {
         perror("Error in realloc");
         exit(EXIT_FAILURE);
-    }
-}
-
-void cleanPath(char *path) {
-    for (int i = 0; path[i]; i++) {
-        path[i] = '\0';
     }
 }
