@@ -3,23 +3,23 @@
 #define PATH_SIZE 128
 #define BUFFER_SIZE 256
 
-static void cleanPath(char *path);
+static void clean(char *str);
 
 int main(void) {
     setvbuf(stdout, NULL, _IONBF, 0);
 
+
+    pid_t pid;
+    int status;
+    int wstatus;
+    char path[PATH_SIZE] = {'\0'};
+    char buffer[BUFFER_SIZE] = {'\0'};
+
     while (1) {
-        char buffer[BUFFER_SIZE] = {'\0'};
+        clean(buffer);
         if (read(STDIN_FILENO, buffer, BUFFER_SIZE) == 0) {
             return 0;
         }
-
-        pid_t pid;
-        int status;
-        int wstatus;
-
-        char path[PATH_SIZE] = {'\0'};
-
         for (int i = 0, j = 0; buffer[j]; i++, j++) {
             if (buffer[j] == ' ') {
                 if ((pid = fork()) != 0) {
@@ -29,22 +29,21 @@ int main(void) {
                         exit(EXIT_FAILURE);
                     }
                 } else {
-                    execlp("md5sum", "md5sum", path, (char *)NULL);
+                    execlp("md5sum", "md5sum", path, (char *) NULL);
                     perror("Error in execve.");
                     exit(1);
                 }
-                cleanPath(path);
+                clean(path);
                 i = -1;
             } else {
                 path[i] = buffer[j];
             }
         }
     }
-    return 0;
 }
 
-void cleanPath(char *path) {
-    for (int i = 0; path[i]; i++) {
-        path[i] = '\0';
+void clean(char *str) {
+    for (int i = 0; str[i]; i++) {
+        str[i] = '\0';
     }
 }

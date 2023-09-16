@@ -93,11 +93,6 @@ void read_shm(shmADT shm, char *output) {
 }
 
 void close_shm(shmADT shm) {
-    if (shm_unlink(shm->path) == -1) {
-        perror("Error in shm_unlink");
-        exit(EXIT_FAILURE);
-    }
-
     if (munmap(shm, sizeof(*shm)) == -1) {
         perror("Error in munmap");
         exit(EXIT_FAILURE);
@@ -105,10 +100,15 @@ void close_shm(shmADT shm) {
 }
 
 void close_shm_connection(shmADT shm) {
+    char aux[PATH_SIZE];
+    strcpy(aux, shm->path);
     if (sem_destroy(&shm->hasData) == -1) {
         perror("Error in sem_destroy");
         exit(EXIT_FAILURE);
     }
-
     close_shm(shm);
+    if (shm_unlink(aux) == -1) {
+        perror("Error in shm_unlink");
+        exit(EXIT_FAILURE);
+    }
 }
