@@ -35,10 +35,9 @@ int main(int argc, char *argv[]) {
     int count = 1;
 
     shmADT shm = create_shm("/shm");
-    sleep(VIEW_TIMEOUT);
 
-    if (!isatty(STDOUT_FILENO))
-        dprintf(STDOUT_FILENO, "/shm %d\n", filesQty);
+    printf("/shm %d\n", filesQty);
+    sleep(VIEW_TIMEOUT);
 
     for (int i = 0; i < slavesQty; i++) {
         slaves[i].filesProcessed = 0;
@@ -65,7 +64,7 @@ int main(int argc, char *argv[]) {
             dup(fdsSlaveToApp[i][STDOUT_FILENO]);
             close(fdsSlaveToApp[i][STDIN_FILENO]);
             close(fdsSlaveToApp[i][STDOUT_FILENO]);
-            execve("slave", (char *[]){NULL}, (char *[]){NULL});
+            execve("slave", (char *[]){"slave", NULL}, (char *[]){NULL});
             perror("Error in execve");
             exit(EXIT_FAILURE);
         }
