@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "lib/app.h"
 
 #define FILES_PER_SLAVE 20
@@ -13,8 +15,7 @@ typedef struct slave {
 } slave;
 
 static void sendToSlave(int fdsAppToSlave[][2], const char *path, int *count, int slaveNumber);
-
-static void checkRealloc(const char *s);
+static void * doRealloc(void *toSend, size_t len);
 
 int main(int argc, char *argv[]) {
     int filesQty = argc - 1;
@@ -77,6 +78,11 @@ int main(int argc, char *argv[]) {
     size_t lenAux;
     int fd = open("output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
+    if(fd == -1){
+        perror("Error in open");
+        exit(EXIT_FAILURE);
+    }
+
     while (filesRemaining > 0) {
         FD_ZERO(&rdfs);  // elimina todos los fd, vacia el array
         maxFd = 0;
@@ -101,9 +107,9 @@ int main(int argc, char *argv[]) {
 
                 charsRead = read(fdsSlaveToApp[i][STDIN_FILENO], buffer, INFO_SIZE);
 
-                for (int j = 0; j < charsRead; j++) {
+                for (int j = 0; j < charsRead && j < INFO_SIZE - 1; j++) {
                     if (buffer[j] == '\n') {
-                        buffer[j + 1] = '\0';
+                        buffer[++j] = '\0';
 
                         filesRemaining--;
 
@@ -138,22 +144,24 @@ void sendToSlave(int fdsAppToSlave[][2], const char *path, int *count, int slave
     size_t len;
     for (len = 0; path[len]; len++) {
         if (len % BLOQUE == 0) {
-            toSend = realloc(toSend, sizeof(char) * (len + BLOQUE));
-            checkRealloc(toSend);
+            toSend = doRealloc(toSend, sizeof(char) * (len + BLOQUE));
         }
         toSend[len] = path[len];
     }
-    toSend = realloc(toSend, len + 1);
-    checkRealloc(toSend);
+
+    toSend = doRealloc(toSend, len + 1);
+
     toSend[len] = ' ';
     write(fdsAppToSlave[slaveNumber][STDOUT_FILENO], toSend, len + 1);
     free(toSend);
     (*count)++;
 }
-
-void checkRealloc(const char *s) {
-    if (s == NULL) {
+void * doRealloc(void *toSend, size_t len) {
+    void *aux = realloc(toSend, len);
+    if (aux == NULL) {
+        free(toSend);
         perror("Error in realloc");
         exit(EXIT_FAILURE);
     }
+    return aux;
 }

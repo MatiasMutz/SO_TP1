@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "shmADT.h"
 
 #define PATH_SIZE 256
@@ -12,7 +14,7 @@ typedef struct shmCDT {
 shmADT create_shm(const char *shmpath) {
     shmADT shm;
 
-    shm_unlink(shmpath);
+    //shm_unlink(shmpath);
     int shm_fd = shm_open(shmpath, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 
     if (shm_fd == -1) {
@@ -22,7 +24,6 @@ shmADT create_shm(const char *shmpath) {
 
     if (ftruncate(shm_fd, sizeof(shmCDT)) == -1) {
         perror("Error in ftruncate");
-        shm_unlink(shmpath);
         exit(EXIT_FAILURE);
     }
 

@@ -19,3 +19,7 @@ view
 *.o
 *.txt
 .vscode/
+report.tasks~
+report.tasks
+PVS-Studio.log
+strace_out

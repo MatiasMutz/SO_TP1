@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "lib/view.h"
 
 #define PIPE_INFO 128
@@ -9,7 +11,7 @@ int main(int argc, char *argv[]) {
     char shmPath[PATH_SIZE];
 
     if (argc == 2) {  // recibio el nombre de la shm por linea de comandos
-        strcpy(shmPath, argv[1]);
+        strncpy(shmPath, argv[1], PATH_SIZE - 1);
 
     } else if (argc == 1) {  // recibio el nombre de la shm por STDIN
         char *aux = NULL;
@@ -22,11 +24,11 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
 
-        for (int i = 0; aux[i] != '\n'; i++) {
+        for (i = 0; aux[i] != '\n'; i++) {
             shmPath[i] = aux[i];
         }
 
-        shmPath[i - 1] = 0;
+        shmPath[i] = 0;
 
         free(aux);
 
