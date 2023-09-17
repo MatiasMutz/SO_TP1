@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
     int count = 1;
 
-    shmADT shm = create_shm("/shm");
+    shmADT shm = shmCreate("/shm");
 
     printf("/shm\n");
     sleep(VIEW_TIMEOUT);
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
 
                         lenAux = strlen(slaveData);
                         write(fd, slaveData, lenAux);
-                        write_shm(shm, slaveData, lenAux);
+                        shmWrite(shm, slaveData, lenAux);
 
                         slaves[i].filesProcessed++;
                     }
@@ -128,13 +128,13 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    write_shm(shm, "\0", 1);
+    shmWrite(shm, "\0", 1);
     
     for (int i = 0; i < slavesQty; i++) {
         close(fdsSlaveToApp[i][STDIN_FILENO]);
         close(fdsAppToSlave[i][STDOUT_FILENO]);
     }
-    close_shm(shm);
+    shmClose(shm);
     close(fd);
     return 0;
 }

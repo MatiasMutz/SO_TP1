@@ -11,35 +11,35 @@ typedef struct shmCDT {
     char buffer[BUFSIZ];
 } shmCDT;
 
-shmADT create_shm(const char *shmpath) {
+shmADT shmCreate(const char *shmpath) {
     shmADT shm;
 
     //shm_unlink(shmpath);
-    int shm_fd = shm_open(shmpath, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+    int shmFd = shm_open(shmpath, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 
-    if (shm_fd == -1) {
+    if (shmFd == -1) {
         perror("Error in shm_open");
         exit(EXIT_FAILURE);
     }
 
-    if (ftruncate(shm_fd, sizeof(shmCDT)) == -1) {
+    if (ftruncate(shmFd, sizeof(shmCDT)) == -1) {
         perror("Error in ftruncate");
         exit(EXIT_FAILURE);
     }
 
-    shm = mmap(NULL, sizeof(*shm), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    shm = mmap(NULL, sizeof(*shm), PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
 
     if (shm == MAP_FAILED) {
         perror("Error in mmap");
         // shm_unlink(shmpath); todo
-        // close(shm_fd); todo
+        // close(shmFd); todo
         exit(EXIT_FAILURE);
     }
 
     if (sem_init(&shm->hasData, 1, 0) == -1) {
         perror("Error in sem_init");
         // shm_unlink(shmpath); todo
-        // close(shm_fd); todo
+        // close(shmFd); todo
         exit(EXIT_FAILURE);
     }
 
@@ -57,17 +57,17 @@ shmADT create_shm(const char *shmpath) {
     return shm;
 }
 
-shmADT connect_shm(char *shmpath) {
+shmADT shmConnect(char *shmpath) {
     shmADT shm;
 
-    int shm_fd = shm_open(shmpath, O_RDWR, S_IRUSR | S_IWUSR);
+    int shmFd = shm_open(shmpath, O_RDWR, S_IRUSR | S_IWUSR);
 
-    if (shm_fd == -1) {
+    if (shmFd == -1) {
         perror("Error in shm_open");
         exit(EXIT_FAILURE);
     }
 
-    shm = mmap(NULL, sizeof(*shm), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    shm = mmap(NULL, sizeof(*shm), PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
 
     if (shm == MAP_FAILED) {
         perror("Error in mmap");
@@ -77,7 +77,7 @@ shmADT connect_shm(char *shmpath) {
     return shm;
 }
 
-void write_shm(shmADT shm, char *input, size_t size) {
+void shmWrite(shmADT shm, char *input, size_t size) {
     if (input == NULL) {
         perror("Error in buffer");
         exit(EXIT_FAILURE);
@@ -88,7 +88,7 @@ void write_shm(shmADT shm, char *input, size_t size) {
     sem_post(&shm->hasData);
 }
 
-int read_shm(shmADT shm, char *output) {
+int shmRead(shmADT shm, char *output) {
     sem_wait(&shm->hasData);
     int i;
 
@@ -105,21 +105,21 @@ int read_shm(shmADT shm, char *output) {
     return 0;
 }
 
-void close_shm(shmADT shm) {
+void shmClose(shmADT shm) {
     if (munmap(shm, sizeof(*shm)) == -1) {
         perror("Error in munmap");
         exit(EXIT_FAILURE);
     }
 }
 
-void close_shm_connection(shmADT shm) {
+void shmCloseConnection(shmADT shm) {
     char aux[PATH_SIZE];
     strcpy(aux, shm->path);
     if (sem_destroy(&shm->hasData) == -1) {
         perror("Error in sem_destroy");
         exit(EXIT_FAILURE);
     }
-    close_shm(shm);
+    shmClose(shm);
     if (shm_unlink(aux) == -1) {
         perror("Error in shm_unlink");
         exit(EXIT_FAILURE);

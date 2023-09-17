@@ -37,14 +37,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    shmADT shm = connect_shm(shmPath);
+    shmADT shm = shmConnect(shmPath);
 
     char buffer[BUFSIZ];
 
-    while (read_shm(shm, buffer) != END_READ) {
+    while (shmRead(shm, buffer) != END_READ) {
         printf("%s", buffer);
     }
 
-    close_shm_connection(shm);
+    shmCloseConnection(shm);
     return 0;
 }

@@ -12,16 +12,16 @@
 
 typedef struct shmCDT *shmADT;
 
-shmADT create_shm(const char *shmpath);
+shmADT shmCreate(const char *shmpath);
 
-shmADT connect_shm(char *shmpath);
+shmADT shmConnect(char *shmpath);
 
-void write_shm(shmADT shm, char *buffer, size_t size);
+void shmWrite(shmADT shm, char *buffer, size_t size);
 
-int read_shm(shmADT shm, char *buffer);
+int shmRead(shmADT shm, char *buffer);
 
-void close_shm(shmADT shm);
+void shmClose(shmADT shm);
 
-void close_shm_connection(shmADT shm);
+void shmCloseConnection(shmADT shm);
 
 #endif
