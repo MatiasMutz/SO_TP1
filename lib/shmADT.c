@@ -14,7 +14,6 @@ typedef struct shmCDT {
 shmADT shmCreate(const char *shmpath) {
     shmADT shm;
 
-    //shm_unlink(shmpath);
     int shmFd = shm_open(shmpath, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 
     if (shmFd == -1) {
@@ -24,6 +23,7 @@ shmADT shmCreate(const char *shmpath) {
 
     if (ftruncate(shmFd, sizeof(shmCDT)) == -1) {
         perror("Error in ftruncate");
+        shm_unlink(shmpath);
         exit(EXIT_FAILURE);
     }
 
@@ -31,15 +31,15 @@ shmADT shmCreate(const char *shmpath) {
 
     if (shm == MAP_FAILED) {
         perror("Error in mmap");
-        // shm_unlink(shmpath); todo
-        // close(shmFd); todo
+        shmClose(shm);
+        shm_unlink(shmpath);
         exit(EXIT_FAILURE);
     }
 
     if (sem_init(&shm->hasData, 1, 0) == -1) {
         perror("Error in sem_init");
-        // shm_unlink(shmpath); todo
-        // close(shmFd); todo
+        shmClose(shm);
+        shm_unlink(shmpath);
         exit(EXIT_FAILURE);
     }
 
