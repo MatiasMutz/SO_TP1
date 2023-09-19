@@ -22,10 +22,10 @@ Repositorio para el **TP1** de la materia **Sistemas Operativos** en el **ITBA**
   - [Resultados](#resultados)
 
 ## Autores
-
-- Ben Deyheralde (Legajo: 63559)
-- Matias Mutz (Legajo: 63590)
-- Lucas Rouco (Legajo: 63366)
+- Grupo 12:
+  - Ben Deyheralde (Legajo: 63559)
+  - Lucas Gonzalez Rouco (Legajo: 63366)
+  - Matias Mutz (Legajo: 63590)
 
 ## Requisitos
 
